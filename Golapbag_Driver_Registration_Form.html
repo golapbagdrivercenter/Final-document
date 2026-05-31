@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Golapbag Driver Center - Driver Registration Form</title>
+    <!-- Font Awesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js library for high-quality PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Cropper.js CSS & JS for Live Image Cropping -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 1000px;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+            padding: 30px;
+            position: relative;
+        }
+
+        /* HTML থেকে PDF করার সময় পেজ ব্রেক হওয়া আটকানোর জন্য */
+        #registration-form-area {
+            background-color: #ffffff;
+            page-break-inside: avoid;
+        }
+
+        /* Header & Logo Stamp Styling */
+        .header-section {
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            border-bottom: 2px dashed #1a73e8;
+            padding-bottom: 15px;
+        }
+
+        .logo-stamp {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 10px auto;
+            border-radius: 50%;
+            border: 3px solid #1a73e8;
+            box-shadow: 0 0 10px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
+        .logo-stamp img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-section h2 {
+            font-size: 20px;
+            color: #d32f2f;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .header-section p {
+            font-size: 12px;
+            color: #5f6368;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Driver Photo Upload Styling */
+        .photo-upload-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .photo-preview-box {
+            width: 110px;
+            height: 130px;
+            border: 2px dashed #1a73e8;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .photo-preview-box i {
+            font-size: 35px;
+            color: #8ab4f8;
+        }
+
+        .photo-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        .upload-label {
+            font-size: 12px;
+            color: #1a73e8;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Desktop Mode Grid Layout System */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        /* Form Input Fields */
+        .input-group {
+            position: relative;
+            margin-bottom: 5px; /* গ্রিড গ্যাপের সাথে সামঞ্জস্য রাখতে কমানো হয়েছে */
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #202124;
+            outline: none;
+            background-color: #ffffff;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: #1a73e8;
+            border-width: 2px;
+        }
+
+        .input-group label {
+            position: absolute;
+            left: 12px;
+            top: -9px;
+            background-color: white;
+            padding: 0 5px;
+            font-size: 11px;
+            color: #1a73e8;
+            font-weight: 600;
+        }
+
+        /* ডেট ইনপুট থেকে ক্যালেন্ডার আইকন সম্পূর্ণ সরানোর জন্য সিএসএস */
+        .no-calendar::-webkit-calendar-picker-indicator {
+            display: none;
+            -webkit-appearance: none;
+        }
+        .no-calendar::-webkit-inner-spin-button,
+        .no-calendar::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #202124;
+            margin: 20px 0 12px 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #f1f3f4;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Guardian Radio Options System */
+        .radio-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #dadce0;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #3c4043;
+            cursor: pointer;
+        }
+
+        /* Document Upload Box Grid (Fixed to 3:2 Aspect Ratio) */
+        .doc-upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .doc-box {
+            border: 1px dashed #ced4da;
+            border-radius: 8px;
+            width: 100%;
+            aspect-ratio: 3 / 2;
+            text-align: center;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            font-size: 11px;
+            color: #5f6368;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .doc-box:hover {
+            border-color: #1a73e8;
+            background-color: #f1f3f4;
+        }
+
+        .doc-box i {
+            font-size: 22px;
+            margin-bottom: 4px;
+            color: #70757a;
+        }
+
+        /* Document Preview Image Style */
+        .doc-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        /* Verification Checkbox Style */
+        .verification-list {
+            background-color: #fff9e6;
+            border: 1px solid #ffe082;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #3c4043;
+        }
+
+        .checkbox-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-group input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        /* PDF Button Style */
+        .download-btn {
+            background-color: #2e7d32;
+            color: white;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
+        }
+
+        .download-btn:hover {
+            background-color: #1b5e20;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* --- Cropper Pop-up Modal Styling --- */
+        .crop-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .crop-modal-content {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .crop-modal-content h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #202124;
+        }
+
+        .image-wrapper {
+            max-height: 350px;
+            width: 100%;
+            overflow: hidden;
+            background-color: #f1f3f4;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .image-wrapper img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .crop-btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .crop-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .crop-btn-save { background-color: #1a73e8; color: white; }
+        .crop-btn-cancel { background-color: #dadce0; color: #3c4043; }
+
+        /* মোবাইল স্ক্রিনে রেসপন্সিভনেস বজায় রাখার জন্য */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    
+    <!-- Printable Area Begins -->
+    <div id="registration-form-area">
+        
+        <!-- Logo Stamp & Header -->
+        <div class="header-section">
+            <div class="logo-stamp">
+                <img src="https://files.catbox.moe/f4fkro.png" alt="Logo" onerror="this.style.display='none'; this.parentNode.innerText='STAMP';">
+            </div>
+            <h2>GOLAPBAG DRIVER CENTER</h2>
+            <p>Driver Registration Form</p>
+        </div>
+
+        <!-- Driver Photo Upload Frame -->
+        <div class="photo-upload-section">
+            <label for="driver-photo-input">
+                <div class="photo-preview-box" id="photo-preview">
+                    <i class="fa-solid fa-user-tie"></i>
+                    <img id="img-display" src="#" alt="Driver Photo">
+                </div>
+            </label>
+            <span class="upload-label">Select Driver Photo</span>
+            <input type="file" id="driver-photo-input" accept="image/*" onchange="openCropper(this, 'img-display', 'photo-preview', 120/140)">
+        </div>
+
+        <!-- Form Elements -->
+        <form id="main-form">
+            
+            <!-- Desktop Grid Container Start -->
+            <div class="form-grid">
+
+                <!-- ID Number Field -->
+                <div class="input-group">
+                    <label style="color: #d32f2f; font-weight: bold;">ID Number</label>
+                    <input type="text" placeholder="Enter Driver ID (e.g., GDC-101)" style="border-color: #d32f2f;">
+                </div>
+
+                <div class="input-group">
+                    <label>Driver's Full Name</label>
+                    <input type="text" placeholder="Enter full name" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Mobile Number</label>
+                    <input type="tel" placeholder="10-digit mobile number" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Driving License Number</label>
+                    <input type="text" placeholder="Enter WB number" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Aadhaar Card Number</label>
+                    <input type="text" placeholder="Enter Aadhaar number" required>
+                </div>
+
+                <!-- Date of Birth Field (Calendar Picker Hidden for Copy-Paste Support) -->
+                <div class="input-group">
+                    <label>Date of Birth</label>
+                    <input type="date" class="no-calendar" required>
+                </div>
+
+                <div class="input-group full-width">
+                    <label>Blood Group</label>
+                    <select>
+                        <option value="">Select Blood Group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                </div>
+
+                <!-- Guardian Selection Section -->
+                <div class="full-width">
+                    <div class="section-title">
+                        <i class="fa-solid fa-users"></i> Guardian Details
+                    </div>
+                    
+                    <div class="radio-container">
+                        <label class="radio-option">
+                            <input type="radio" name="guardian" value="father" checked onclick="toggleGuardianLabel('Father's Name')"> Father's Name
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="guardian" value="mother" onclick="toggleGuardianLabel('Mother's Name')"> Mother's Name
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="guardian" value="spouse" onclick="toggleGuardianLabel('Spouse's Name')"> Spouse's Name
+                        </label>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label id="guardian-name-label">Father's Name</label>
+                    <input type="text" placeholder="Enter guardian name" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Guardian's Mobile Number</label>
+                    <input type="tel" placeholder="Enter mobile number">
+                </div>
+
+                <!-- Address Section -->
+                <div class="full-width">
+                    <div class="section-title">
+                        <i class="fa-solid fa-location-dot"></i> Address Details
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Street / Village</label>
+                    <input type="text" placeholder="Enter street or village name">
+                </div>
+
+                <div class="input-group">
+                    <label>City / Town</label>
+                    <input type="text" placeholder="Enter city name">
+                </div>
+
+                <div class="input-group">
+                    <label>State</label>
+                    <input type="text" placeholder="e.g., West Bengal">
+                </div>
+
+                <div class="input-group">
+                    <label>Zip / Pin Code</label>
+                    <input type="text" placeholder="6-digit pin code">
+                </div>
+
+                <!-- Document Upload Section -->
+                <div class="full-width">
+                    <div class="section-title">
+                        <i class="fa-solid fa-file-arrow-up"></i> Documents Upload (Front & Back Images)
+                    </div>
+                </div>
+
+                <div>
+                    <p style="font-size: 13px; font-weight: 600; color: #5f6368; margin-bottom: 6px;">1. Driver's Aadhaar Card</p>
+                    <div class="doc-upload-grid">
+                        <div class="doc-box" id="box-adhaar-f" onclick="document.getElementById('adhaar-f').click()">
+                            <i class="fa-solid fa-id-card"></i><br><span>Front Side</span>
+                            <img id="img-adhaar-f" src="#" alt="Aadhaar Front">
+                            <input type="file" id="adhaar-f" accept="image/*" onchange="openCropper(this, 'img-adhaar-f', 'box-adhaar-f', 3/2)">
+                        </div>
+                        <div class="doc-box" id="box-adhaar-b" onclick="document.getElementById('adhaar-b').click()">
+                            <i class="fa-solid fa-id-card"></i><br><span>Back Side</span>
+                            <img id="img-adhaar-b" src="#" alt="Aadhaar Back">
+                            <input type="file" id="adhaar-b" accept="image/*" onchange="openCropper(this, 'img-adhaar-b', 'box-adhaar-b', 3/2)">
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <p style="font-size: 13px; font-weight: 600; color: #5f6368; margin-bottom: 6px;">2. Driving License</p>
+                    <div class="doc-upload-grid">
+                        <div class="doc-box" id="box-dl-f" onclick="document.getElementById('dl-f').click()">
+                            <i class="fa-solid fa-address-card"></i><br><span>Front Side</span>
+                            <img id="img-dl-f" src="#" alt="DL Front">
+                            <input type="file" id="dl-f" accept="image/*" onchange="openCropper(this, 'img-dl-f', 'box-dl-f', 3/2)">
+                        </div>
+                        <div class="doc-box" id="box-dl-b" onclick="document.getElementById('dl-b').click()">
+                            <i class="fa-solid fa-address-card"></i><br><span>Back Side</span>
+                            <img id="img-dl-b" src="#" alt="DL Back">
+                            <input type="file" id="dl-b" accept="image/*" onchange="openCropper(this, 'img-dl-b', 'box-dl-b', 3/2)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="full-width">
+                    <p style="font-size: 13px; font-weight: 600; color: #5f6368; margin-bottom: 6px;">3. Guardian's Aadhaar Card</p>
+                    <div class="doc-upload-grid" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="doc-box" id="box-g-f" onclick="document.getElementById('g-f').click()">
+                            <i class="fa-solid fa-id-card"></i><br><span>Front Side</span>
+                            <img id="img-g-f" src="#" alt="Guardian ID Front">
+                            <input type="file" id="g-f" accept="image/*" onchange="openCropper(this, 'img-g-f', 'box-g-f', 3/2)">
+                        </div>
+                        <div class="doc-box" id="box-g-b" onclick="document.getElementById('g-b').click()">
+                            <i class="fa-solid fa-id-card"></i><br><span>Back Side</span>
+                            <img id="img-g-b" src="#" alt="Guardian ID Back">
+                            <input type="file" id="g-b" accept="image/*" onchange="openCropper(this, 'img-g-b', 'box-g-b', 3/2)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Checklist System -->
+                <div class="full-width">
+                    <div class="verification-list">
+                        <p style="font-size: 13px; font-weight: bold; color: #b06000; margin-bottom: 10px;">
+                            <i class="fa-solid fa-clipboard-check"></i> Verification Check (Tick if Received)
+                        </p>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="check-photo">
+                            <label style="position:static; background:none; font-size:13px; color:#3c4043;" for="check-photo">Driver's passport photo collected</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="check-dl">
+                            <label style="position:static; background:none; font-size:13px; color:#3c4043;" for="check-dl">Driving License verified (Front & Back)</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="check-adhaar">
+                            <label style="position:static; background:none; font-size:13px; color:#3c4043;" for="check-adhaar">Driver's Aadhaar card copy received</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="check-guardian">
+                            <label style="position:static; background:none; font-size:13px; color:#3c4043;" for="check-guardian">Guardian's Aadhaar card copy received</label>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- Desktop Grid Container End -->
+
+        </form>
+    </div>
+    <!-- Printable Area Ends -->
+
+    <!-- PDF Download Button -->
+    <button class="download-btn" onclick="downloadRegistrationPDF()">
+        <i class="fa-solid fa-file-pdf"></i> Download Registration Form PDF
+    </button>
+</div>
+
+<!-- --- Cropper Modal Pop-up Interface --- -->
+<div class="crop-modal" id="cropperModal">
+    <div class="crop-modal-content">
+        <h3>Adjust Image Size</h3>
+        <div class="image-wrapper">
+            <img id="imageToCrop" src="" alt="Source Image">
+        </div>
+        <div class="crop-btn-group">
+            <button class="crop-btn crop-btn-cancel" onclick="closeCropperModal()">Cancel</button>
+            <button class="crop-btn crop-btn-save" onclick="triggerCropAction()">Crop & Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cropperInstance = null;
+    let activeImgId = '';
+    let activeBoxId = '';
+    let activeInputSource = null;
+
+    function openCropper(input, imgId, boxId, ratio) {
+        const file = input.files[0];
+        if (file) {
+            activeImgId = imgId;
+            activeBoxId = boxId;
+            activeInputSource = input;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const modalImg = document.getElementById('imageToCrop');
+                modalImg.src = e.target.result;
+                
+                document.getElementById('cropperModal').style.display = 'flex';
+                
+                if (cropperInstance) {
+                    cropperInstance.destroy();
+                }
+
+                cropperInstance = new Cropper(modalImg, {
+                    aspectRatio: ratio, 
+                    viewMode: 1,
+                    background: false,
+                    responsive: true
+                });
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function triggerCropAction() {
+        if (cropperInstance) {
+            const canvas = cropperInstance.getCroppedCanvas();
+            const resultImg = document.getElementById(activeImgId);
+            const containerBox = document.getElementById(activeBoxId);
+
+            resultImg.src = canvas.toDataURL();
+            resultImg.style.display = 'block';
+
+            if(containerBox.querySelector('i')) containerBox.querySelector('i').style.display = 'none';
+            if(containerBox.querySelector('span')) containerBox.querySelector('span').style.display = 'none';
+            if(containerBox.querySelector('br')) containerBox.querySelector('br').style.display = 'none';
+
+            closeCropperModal();
+        }
+    }
+
+    function closeCropperModal() {
+        document.getElementById('cropperModal').style.display = 'none';
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+        if (activeInputSource) {
+            activeInputSource.value = "";
+        }
+    }
+
+    function toggleGuardianLabel(labelText) {
+        document.getElementById('guardian-name-label').innerText = labelText;
+    }
+
+    // PDF জেনারেশন সেটিংস পরিবর্তন করা হয়েছে যাতে ১টি পেজে সব ডেটা ফিট হয়ে যায়
+    function downloadRegistrationPDF() {
+        const element = document.getElementById('registration-form-area');
+        
+        const opt = {
+            margin:       [8, 8, 8, 8], // মার্জিন সামান্য কমানো হলো যাতে ডেটা পেজে আটে
+            filename:     'Golapbag_Driver_Registration_Form.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, scrollY: 0 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css'] } // পেজ ব্রেক বা সাদা পাতা আসা বন্ধ করার মোড
+        };
+
+        // জেনারেট করার সময় যেন পুরো অংশ নিখুঁত আসে
+        html2pdf().set(opt).from(element).save();
+    }
+</script>
+
+</body>
+</html>
